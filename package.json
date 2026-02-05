@@ -1,0 +1,19 @@
+{
+  "name": "project-management",
+  "version": "1.0.0",
+  "description": "Simple project management application",
+  "keywords": [
+    "Backend",
+    "project"
+  ],
+  "license": "ISC",
+  "author": "Arnav Saxena",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node index js"
+  },
+  "devDependencies": {
+    "prettier": "3.8.1"
+  }
+}

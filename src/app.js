@@ -5,6 +5,8 @@ const app = express();
 export default app;
 
 app.use(express.json({ limit: "16kb" }));
+// Express runs from top to bottom
+// This line is at top since all the other app.use() may require JSON parser
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
@@ -20,13 +22,16 @@ app.use(
 import healthCheckRouter from "./routes/healthcheck-routes.js";
 import authRouter from "./routes/auth-routes.js";
 import { errorMiddleware } from "./middlewares/error-middleware.js";
+import { projectRouter } from "./routes/project-routes.js";
 
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/projects", projectRouter);
+
 app.get("/", (req, res) => {
   res.send("This is home page");
 });
 app.get("/about", (req, res) => {
   res.send("This is about page");
 });
-app.use(errorMiddleware)
+app.use(errorMiddleware);

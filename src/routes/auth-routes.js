@@ -6,6 +6,7 @@ import {
   logoutUser,
   refreshAccessToken,
   registerUser,
+  uploadUserAvatar,
   resendEmailVerification,
   resetForgotPassword,
   verifyEmail,
@@ -20,24 +21,25 @@ import {
 import { validate } from "../middlewares/validator-middleware.js";
 import { login } from "../controllers/auth.controllers.js";
 import { verifyJWT } from "../middlewares/auth-middleware.js";
-const router = Router();
+import { upload } from "../middlewares/multer-middleware.js";
+const authRouter = Router();
 
 // unsecured routes
-router.route("/register").post(userRegisterValidator(), validate, registerUser);
-router.route("/login").post(userLoginValidator(), validate, login);
-router.route("/verify-email/:verificationToken").get(verifyEmail);
-router.route("/refresh-token").post(refreshAccessToken);
-router
+authRouter.route("/register").post(userRegisterValidator(), validate, registerUser);
+authRouter.route("/login").post(userLoginValidator(), validate, login);
+authRouter.route("/verify-email/:verificationToken").get(verifyEmail);
+authRouter.route("/refresh-token").post(refreshAccessToken);
+authRouter
   .route("/forgot-password")
   .post(userForgotPasswordValidator(), validate, forgotPasswordRequest);
-router
+authRouter
   .route("/reset-password/:resetToken")
   .post(userResetForgotPasswordValidator(), validate, resetForgotPassword);
 
 // secured routes
-router.route("/logout").post(verifyJWT, logoutUser);
-router.route("/current-user").post(verifyJWT, getCurrentUser);
-router
+authRouter.route("/logout").post(verifyJWT, logoutUser);
+authRouter.route("/current-user").get(verifyJWT, getCurrentUser);
+authRouter
   .route("/change-password")
   .post(
     verifyJWT,
@@ -45,7 +47,10 @@ router
     validate,
     changeCurrentPassword,
   );
-router
+authRouter
   .route("/resend-email-verification")
   .post(verifyJWT, resendEmailVerification);
-export default router;
+authRouter
+  .route("/upload-avatar")
+  .put(verifyJWT, upload.single("avatar"), uploadUserAvatar);
+export {authRouter};

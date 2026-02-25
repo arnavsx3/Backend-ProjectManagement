@@ -7,6 +7,10 @@ import {
   forgotPasswordMailgenContent,
   sendEmail,
 } from "../utils/mail.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 const { JsonWebTokenError } = jwt;
 
@@ -68,6 +72,40 @@ const registerUser = asyncHandler(async (req, res) => {
         200,
         { user: createdUser },
         "You are registered successfully, verify yourself using the verification email sent to you!!",
+      ),
+    );
+});
+
+const uploadUserAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar file is missing");
+  }
+  const uploadedAvatar = await uploadOnCloudinary(avatarLocalPath);
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      throw new ApiError(401, "Unauthorized access");
+    }
+    if (user.avatarPublicId) {
+      await deleteFromCloudinary(user.avatarPublicId);
+    }
+    user.avatar = uploadedAvatar.url;
+    user.avatarPublicId = uploadedAvatar.public_id;
+    await user.save();
+  } catch (error) {
+    if (uploadedAvatar) {
+      await deleteFromCloudinary(uploadedAvatar.public_id);
+    }
+    throw new ApiError(500, "Something went wrong while setting up Avatar");
+  }
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { avatar: uploadedAvatar.url },
+        "Avatar set up successfully",
       ),
     );
 });
@@ -239,6 +277,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid refresh token");
   }
 });
+
 const forgotPasswordRequest = asyncHandler(async (req, res) => {
   const email = req.body;
   const user = await User.findOne({ email });
@@ -304,6 +343,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 export {
   generateAccessAndRefreshTokens,
   registerUser,
+  uploadUserAvatar,
   login,
   logoutUser,
   getCurrentUser,

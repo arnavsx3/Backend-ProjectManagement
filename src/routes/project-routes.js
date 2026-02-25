@@ -18,7 +18,7 @@ import {
 } from "../validators/project-validators.js";
 import { validate } from "../middlewares/validator-middleware.js";
 import { AvailableUserRole, UserRolesEnum } from "../utils/constants.js";
-import router from "./auth-routes.js";
+import { authRouter } from "./auth-routes.js";
 
 const projectRouter = Router();
 projectRouter.use(verifyJWT);
@@ -39,7 +39,7 @@ projectRouter
   )
   .delete(validateProjectPermission([UserRolesEnum.ADMIN]), deleteProject);
 
-router
+projectRouter
   .route("/:projectId/members/") // : => params
   .get(getProjectMembers)
   .post(
@@ -49,7 +49,7 @@ router
     addMemberToProject,
   );
 
-router
+projectRouter
   .route("/:projectId/members/:userId")
   .put(validateProjectPermission([UserRolesEnum.ADMIN]), updateMemberRoles)
   .delete(validateProjectPermission([UserRolesEnum.ADMIN], deleteMember));

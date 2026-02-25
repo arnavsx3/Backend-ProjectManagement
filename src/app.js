@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { ApiError } from "./utils/api-error.js";
+
 const app = express();
 export default app;
 
@@ -20,7 +22,7 @@ app.use(
 );
 
 import healthCheckRouter from "./routes/healthcheck-routes.js";
-import authRouter from "./routes/auth-routes.js";
+import { authRouter } from "./routes/auth-routes.js";
 import { errorMiddleware } from "./middlewares/error-middleware.js";
 import { projectRouter } from "./routes/project-routes.js";
 
@@ -33,5 +35,10 @@ app.get("/", (req, res) => {
 });
 app.get("/about", (req, res) => {
   res.send("This is about page");
+});
+
+
+app.use((req, res, next) => {
+  next(new ApiError(404, "Route not found"));
 });
 app.use(errorMiddleware);
